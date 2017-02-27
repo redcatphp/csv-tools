@@ -1,0 +1,18 @@
+{
+    "name": "redcatphp/csv-tools",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "jo",
+            "email": "jo@surikat.pro"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "RedCat\\CSVTools\\": "src"
+        }
+    }
+}
