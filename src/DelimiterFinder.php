@@ -1,6 +1,7 @@
 <?php
 
 namespace RedCat\CSVTools;
+use UnexpectedValueException;
 
 /**
  * Delimiter Finder
@@ -16,7 +17,8 @@ class DelimiterFinder
     /**
      * @var string $delimiters
      */
-    private $delimiters = array('\t', ',', ';');
+    //private $delimiters = array('\t', ',', ';');
+    private $delimitersRE = '~[,;]~';
 
     /**
      * @var string $file
@@ -125,7 +127,8 @@ class DelimiterFinder
      * Determine a likely delimiter.
      *
      * Add doc and refactor this code
-     */    
+     */   
+     /*
     protected function search()
     {
         $handle = fopen($this->file, 'r');
@@ -155,4 +158,67 @@ class DelimiterFinder
         
         fclose($handle);
     }
+    */
+    
+    protected function search(){
+		$handle = fopen($this->file, 'r');
+		$delimitersByLine = [];
+		while (!feof($handle)) {
+		//foreach ($this->fileContents as $lineNumber => $line){
+			$line  = fgets($handle);
+			$quoted = false;
+			$delimiters = array();
+
+			for ($i = 0; $i < strlen($line) - 1; $i++){
+				$char = substr($line, $i, 1);
+				if ($char === '"'){
+					$quoted = !$quoted;
+				}
+				else if (!$quoted && preg_match($this->delimitersRE, $char)){
+					if (array_key_exists($char, $delimiters)){
+						$delimiters[$char]++;
+					}
+					else{
+						$delimiters[$char] = 1;
+					}
+				}
+			}
+
+			if (empty($delimitersByLine)){
+				$delimitersByLine = $delimiters;
+			}
+			else{
+				$newDelimitersByLine = $delimiters;
+				foreach ($delimitersByLine as $key => $value){
+					if ((array_key_exists($key, $delimiters) && $delimiters[$key] === $value) || !array_key_exists($key, $delimiters)){
+						$newDelimitersByLine[$key] = $value;
+					}
+				}
+				$delimitersByLine = $newDelimitersByLine;
+				if (sizeof($delimitersByLine) < 2){
+					break;
+				}
+			}
+		}
+
+		arsort($delimitersByLine);
+		$firstDelimiter = key($delimitersByLine);
+
+		if (sizeof($delimitersByLine) > 1){
+			next($delimitersByLine);
+			$nextDelimiter = key($delimitersByLine);
+			if ($delimitersByLine[$firstDelimiter] === $delimitersByLine[$nextDelimiter]){
+				// multiple delimiters with the same frequency found
+				// throw an error
+				throw new UnexpectedValueException();
+			}
+			$this->match = $firstDelimiter;
+		}
+		else{
+			$this->match = $firstDelimiter;
+		}
+		
+		fclose($handle);
+	}
+   
 }
