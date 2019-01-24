@@ -1,3 +1,5 @@
+**No longer actively maintained. I work now with NodeJS and I recommand you to take a look at [PapaParse](https://github.com/mholt/PapaParse)**
+
 #CSV Tools
 
 ###taken from DelimiterFinder https://github.com/darraghenright/DelimiterFinder
